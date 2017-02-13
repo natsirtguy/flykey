@@ -69,6 +69,7 @@
    ;; FlyKey wants to add the files to the directory that contains it,
    ;; so we need to override that behavior. See test-helper.el.
    (let ((flykey-dir flykey-sandbox-path))
+     ;; Test for the case with no .flyk.
      (with-temp-buffer
        (python-mode)
        (let ((flybuf (flykey-open-flyk)))
@@ -77,7 +78,18 @@
 	   (should (string= flybufcontents "#python-mode"))
 	   (should
 	    (string= (buffer-file-name flybuf)
-		     (concat flykey-sandbox-path "/python-mode.flyk")))))))))
+		     (concat flykey-sandbox-path "/python-mode.flyk"))))))
+     ;; Test for the case with .flyk.
+     (with-temp-buffer
+       (lisp-mode)
+       (with-current-buffer (get-buffer-create "lisp-mode.flyk")
+	 (insert "#lisp-mode\n t=that \n")
+	 (write-file (concat flykey-sandbox-path "/lisp-mode.flyk"))
+	 (kill-buffer))
+       (let ((flybuf (flykey-open-flyk)))
+	 (let ((flybufcontents
+		(with-current-buffer flybuf (buffer-string))))
+	   (should (string= flybufcontents "#lisp-mode\n t=that \n"))))))))
 
 (provide 'flykey-test)
 ;;; flykey-test.el ends here
