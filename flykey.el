@@ -104,44 +104,32 @@
   (with-selected-window (get-buffer-window bufinsert)
     (set-window-buffer (split-window-below) flybuf)))
 
+(defun flykey-set-up-buffers (flybuf bufinsert)
+  "Open the windows for FLYBUF and BUFINSERT and apply the keybindings."
+  (let ((pmap (copy-keymap (current-local-map))))
+    (with-current-buffer bufinsert
+      (use-local-map pmap))
+    (flykey-open-windows flybuf bufinsert)
+    (flykey-add-bindings flybuf bufinsert)))
+
 (defun flykey-run ()
-  "Run flykey by opening the flykey file buffer and a temporary buffer.
-The temporary buffer uses the on-the-fly keybindings from the flykey file."
+  "Run flykey."
   (interactive)
-  (let (
-	;; The original buffer.
-	(oldbuf (current-buffer))
-	;; The buffer visiting the flykey file.
-	(flyfilebuf (flykey-open-flyk))
-	;; The parent keymap.
-	(pmap (copy-keymap (current-local-map)))
-	;; The temporary buffer.
-	(flybuf (generate-new-buffer "*flykey*"))
-	)
-    ;; Open two more windows below the current one.
-    (set-window-buffer (split-window-below) flybuf)
-    (with-selected-window (get-buffer-window flybuf)
-      (set-window-buffer (split-window-below) flyfilebuf))
-
-    ;; Switch to flybuf and store the parent keymap, original file,
-    ;; and flykey file buffer as local variables.
-    (select-window (get-buffer-window flybuf))
-    (make-local-variable 'flykey-fkold)
-    (defconst flykey-fkold oldbuf
-      "The buffer from which flykey was called. Buffer-local.")
-    (make-local-variable 'flykey-fkfile)
-    (defconst flykey-fkfile (buffer-file-name flyfilebuf)
-      "The flykey file name. Buffer-local.")
-    (make-local-variable 'flykey-fkpmap)
-    (defconst flykey-fkpmap pmap
-      "The parent keymap that is being inherited. Buffer-local.")
-
-    ;; Add a hook to remake the map every time we modify the flykey file.
-    ;; (remove-hook 'buffer-list-update-hook 'flykey-remake-map); nil t)
-        
-    (use-local-map (flykey-make-map flykey-fkfile flykey-fkpmap))
-    )				; end let
-  )
+  (let ((oldbuf (current-buffer))
+	(flybuf (flykey-open-flyk))
+	(bufinsert (generate-new-buffer "*flykey*")))
+    (flykey-set-up-buffers flybuf bufinsert)
+    (select-window (get-buffer-window bufinsert))
+    ;; (make-local-variable 'flykey-fkold)
+    ;; (defconst flykey-fkold oldbuf
+    ;;   "The buffer from which flykey was called. Buffer-local.")
+    ;; (make-local-variable 'flykey-fkfile)
+    ;; (defconst flykey-fkfile (buffer-file-name flyfilebuf)
+    ;;   "The flykey file name. Buffer-local.")
+    ;; (make-local-variable 'flykey-fkpmap)
+    ;; (defconst flykey-fkpmap pmap
+    ;;   "The parent keymap that is being inherited. Buffer-local.")
+    ))
 
 (provide 'flykey)
 ;;; flykey.el ends here
