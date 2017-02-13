@@ -65,20 +65,20 @@
     (insert (with-current-buffer toinsert (buffer-string)))))
 
 (defun flykey-send-buffer-script (buf shfile)
-  "Send the contets of buffer-or-name BUF to script SHFILE and return the results as a string."
+  "Send the contents of buffer-or-name BUF to script SHFILE and return the results as a string."
   (let ((bufcontents (with-current-buffer buf (buffer-string))))
     (shell-command-to-string
      (concat shfile " \"" bufcontents "\""))))
 
-(defun flykey-make-map-cmds (buf)
-  "Make the list of keymap commands from a buffer BUF in the .flyk format."
+(defun flykey-make-map-cmds (flybuf)
+  "Make the list of keymap commands from a buffer FLYBUF in the .flyk format."
   (flykey-read-quoted-cmds
    ;; Don't forget to split the string by newlines.
    (split-string
     ;; Remove the trailing newline from process.
     (replace-regexp-in-string
      "\n\\'" ""
-     (flykey-send-buffer-script buf flykey-sh-file))
+     (flykey-send-buffer-script flybuf flykey-sh-file))
     "\n")))
 
 (defun flykey-add-bindings (flybuf buf)
@@ -87,7 +87,7 @@
     (flykey-eval-cmds (flykey-make-map-cmds flybuf))))
 
 (defun flykey-open-flyk ()
-  "Return a buffer with the flykey file for the given major mode."
+  "Return a buffer with the flykey file for the current major mode."
   (let ((flyfile
 	 (concat flykey-dir "/" (format "%s" major-mode) ".flyk")))
     (if (file-exists-p flyfile) (find-file-noselect flyfile)
@@ -98,15 +98,11 @@
 	  (insert (concat "#" (format "%s" oldmajor))))
 	flybuf))))
 
-;; (defun flykey-remake-map ()
-;;   "Save flyfile and remake the flykey map."
-;;   (with-selected-window
-;;       ;; Get the window for the flykey file and save it.
-;;       (get-buffer-window (get-file-buffer flykey-fkfile))
-;;     (save-selected-window))
-;;   (use-local-map
-;;    (flykey-make-map flykey-fkfile flykey-fkpmap))
-;;   )
+(defun flykey-open-windows (flybuf bufinsert)
+  "Split the current window, then split one of the halves and display FLYBUF and BUFINSERT there."
+  (set-window-buffer (split-window-below) bufinsert)
+  (with-selected-window (get-buffer-window bufinsert)
+    (set-window-buffer (split-window-below) flybuf)))
 
 (defun flykey-run ()
   "Run flykey by opening the flykey file buffer and a temporary buffer.
