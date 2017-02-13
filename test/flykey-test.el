@@ -67,10 +67,17 @@
   ;; Since this will create files, work in a sandbox directory.
   (with-sandbox
    ;; FlyKey wants to add the files to the directory that contains it,
-   ;; so we need to override that behavior.
+   ;; so we need to override that behavior. See test-helper.el.
    (let ((flykey-dir flykey-sandbox-path))
      (with-temp-buffer
-       (flykey-open-flyk)))))
+       (python-mode)
+       (let ((flybuf (flykey-open-flyk)))
+	 (let ((flybufcontents
+		(with-current-buffer flybuf (buffer-string))))
+	   (should (string= flybufcontents "#python-mode"))
+	   (should
+	    (string= (buffer-file-name flybuf)
+		     (concat flykey-sandbox-path "/python-mode.flyk")))))))))
 
 (provide 'flykey-test)
 ;;; flykey-test.el ends here
