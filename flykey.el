@@ -129,7 +129,7 @@
     (make-local-variable 'flykey-insertbuf)
     (setq flykey-insertbuf insertbuf)))
 
-(defun flykey-run ()
+(defun flykey ()
   "Run flykey."
   (interactive)
   (let ((oldbuf (current-buffer))
@@ -151,14 +151,10 @@
   (delete-window (get-buffer-window flykey-flybuf))
   (delete-window (get-buffer-window flykey-insertbuf)))
 
-(defun flykey-insert-insertbuf ()
-  "Insert the contents of insertbuf into oldbuf."
-  (flykey-insert-buffer flykey-insertbuf flykey-oldbuf))
-
 (defun flykey-insert-and-close ()
   "Insert insertbuf and close windows."
   (interactive)
-  (flykey-insert-insertbuf)
+  (flykey-insert-buffer flykey-insertbuf flykey-oldbuf)
   (flykey-close-windows))
 
 (defun flykey-clear-insertbuf ()
