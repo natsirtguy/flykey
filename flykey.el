@@ -92,7 +92,7 @@
 (defun flykey-open-flyk ()
   "Return a buffer with the flykey file for the current major mode."
   (let ((flyfile
-	 (concat flykey-dir "/" (format "%s" major-mode) ".flyk")))
+	 (concat flykey-dir "/flyks/" (format "%s" major-mode) ".flyk")))
     (if (file-exists-p flyfile) (find-file-noselect flyfile)
       ;; Otherwise, make a new file whose first line is #major-mode.
       (let ((flybuf (find-file-noselect flyfile))
