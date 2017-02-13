@@ -28,14 +28,10 @@
 ;; Boston, MA 02110-1301, USA.
 
 ;;; Commentary:
-;; flykey.el is  tool to rapidly insert specialized text, like LaTeX
+;; flykey.el is a tool to rapidly insert specialized text, like LaTeX
 ;; equations, into a document by changing keymappings on the fly.
 
 ;;; Code:
-
-;; Major parts: open buffers, set up flykeyfile, create keymap,
-;; use keymap in editing buffer, insert editing buffer contents,
-;; close editing buffer and save flykeyfile.
 
 (require 'f)
 
