@@ -141,7 +141,9 @@
     (select-window (get-buffer-window insertbuf))
     (flykey-set-local-vars oldbuf oldbuf flybuf insertbuf)
     (flykey-set-local-vars flybuf oldbuf flybuf insertbuf)
-    (flykey-set-local-vars insertbuf oldbuf flybuf insertbuf)))
+    (flykey-set-local-vars insertbuf oldbuf flybuf insertbuf)
+    (with-current-buffer flybuf
+      (add-hook 'buffer-list-update-hook 'flykey-reload-map nil t))))
 
 (defun flykey-close-windows ()
   "Close the windows associated with flybuf and insertbuf."
@@ -164,6 +166,10 @@
   (interactive)
   (with-current-buffer flykey-insertbuf
     (erase-buffer)))
+
+(defun flykey-reload-map ()
+  "Reload the keymap from flybuf."
+  (flykey-add-bindings flykey-flybuf flykey-insertbuf))
 
 (provide 'flykey)
 ;;; flykey.el ends here
