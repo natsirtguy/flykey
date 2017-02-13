@@ -67,53 +67,36 @@
 (defun flykey-send-buffer-script (buf shfile)
   "Send the contets of buffer-or-name BUF to script SHFILE and return the results as a string."
   (let ((bufcontents (with-current-buffer buf (buffer-string))))
-      (shell-command-to-string
-       (concat "echo \"\\\"" bufcontents "\\\"\" | xargs " shfile))))
+    (shell-command-to-string
+     (concat shfile " \"" bufcontents "\""))))
 
-(defun flykey-make-map (f1 p1)
-  "Run awk on file F1 and produce keymap inherited from P1."
-  (let (
-	
-	;; Get the keys that will be replaced.
-	(keys (split-string
-	       (shell-command-to-string
-		(concat "awk -F'=' 'NR>1 {print $1}' " f1)) "\n"))
-	;; Get the new mappings for the keys.
-	(bindings (split-string
-		   (shell-command-to-string
-		    (concat "awk -F'=' 'NR>1 {print $2}' " f1)) "\n"))
-	;; New keymap to make.
-	(newmap (make-sparse-keymap))
-	)
-    ;; Set up the keymap recursively.
-    (flykey-recurse-map keys bindings newmap)
-        
-    ;; Add keybinding for flykey-insert-at-point.
-    (define-key newmap (kbd "C-c i") 'flykey-insert-at-point)
-    
-    ;; Make a new keymap and inherit from p1.
-    (make-composed-keymap newmap p1)
-    ) 					; end let
-  )
+(defun flykey-make-map-cmds (buf)
+  "Make the list of keymap commands from a buffer BUF in the .flyk format."
+  (flykey-read-quoted-cmds
+   ;; Don't forget to split the string by newlines.
+   (split-string
+    ;; Remove the trailing newline from process.
+    (replace-regexp-in-string
+     "\n\\'" ""
+     (flykey-send-buffer-script buf flykey-sh-file))
+    "\n")))
+
+(defun flykey-add-bindings (flybuf buf)
+  "Add the keybindings described in FLYBUF to the keymap for BUF."
+  (with-current-buffer buf
+    (flykey-eval-cmds (flykey-make-map-cmds flybuf))))
 
 (defun flykey-open-flyk ()
   "Return a buffer with the flykey file for the given major mode."
-  (let ((flyfile (concat "~/.emacs.d/flykey/"
-			 (format "%s" major-mode)
-			 ".flyk")))
-    (if (file-exists-p flyfile)
-	;; If it flykey file already exists, open it and return the buffer.
-	(find-file-noselect flyfile)
+  (let ((flyfile
+	 (concat flykey-dir "/" (format "%s" major-mode) ".flyk")))
+    (if (file-exists-p flyfile) (find-file-noselect flyfile)
       ;; Otherwise, make a new file whose first line is #major-mode.
       (let ((flybuf (find-file-noselect flyfile))
 	    (oldmajor major-mode))
 	(with-current-buffer flybuf
 	  (insert (concat "#" (format "%s" oldmajor))))
-	flybuf
-	)
-      )					; end if
-    )
-  )
+	flybuf))))
 
 ;; (defun flykey-remake-map ()
 ;;   "Save flyfile and remake the flykey map."
