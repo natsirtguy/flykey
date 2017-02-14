@@ -63,33 +63,51 @@
 	  (should (equal (current-local-map) byhand)))))))
 
 ;; Open a buffer with a brand new .flyk file.
-(ert-deftest flkey-open-flyk-test ()
+(ert-deftest flykey-open-flyk-test ()
   ;; Since this will create files, work in a sandbox directory.
   (with-sandbox
-   ;; FlyKey wants to add the files to the directory that contains it,
-   ;; so we need to override that behavior. See test-helper.el.
-   (let ((flykey-dir flykey-sandbox-path))
-     ;; Test for the case with no .flyk.
-     (with-temp-buffer
-       (python-mode)
-       (let ((flybuf (flykey-open-flyk)))
-	 (let ((flybufcontents
-		(with-current-buffer flybuf (buffer-string))))
-	   (should (string= flybufcontents "#python-mode"))
-	   (should
-	    (string= (buffer-file-name flybuf)
-		     (concat flykey-sandbox-path "/python-mode.flyk"))))))
-     ;; Test for the case with .flyk.
-     (with-temp-buffer
-       (lisp-mode)
-       (with-current-buffer (get-buffer-create "lisp-mode.flyk")
-	 (insert "#lisp-mode\n t=that \n")
-	 (write-file (concat flykey-sandbox-path "/lisp-mode.flyk"))
-	 (kill-buffer))
-       (let ((flybuf (flykey-open-flyk)))
-	 (let ((flybufcontents
-		(with-current-buffer flybuf (buffer-string))))
-	   (should (string= flybufcontents "#lisp-mode\n t=that \n"))))))))
+   (kill-leftover-buffers
+    ;; FlyKey wants to add the files to the directory that contains it,
+    ;; so we need to override that behavior. See test-helper.el.
+    ;; Test for the case with no .flyk.
+    (with-temp-buffer
+      (python-mode)
+      (let ((flybuf (flykey-open-flyk)))
+	(let ((flybufcontents
+	       (with-current-buffer flybuf (buffer-string))))
+	  (should (string= flybufcontents "#python-mode\n"))
+	  (should
+	   (string= (buffer-file-name flybuf)
+		    (concat flykey-sandbox-path "/flyks/python-mode.flyk"))))))
+    ;; Test for the case with .flyk.
+    (with-temp-buffer
+      (lisp-mode)
+      (with-current-buffer (get-buffer-create "lisp-mode.flyk")
+	(insert "#lisp-mode\n t=that \n")
+	(write-file (concat flykey-sandbox-path "/flyks/lisp-mode.flyk"))
+	(kill-buffer))
+      (let ((flybuf (flykey-open-flyk)))
+	(let ((flybufcontents
+	       (with-current-buffer flybuf (buffer-string))))
+	  (should (string= flybufcontents "#lisp-mode\n t=that \n"))))))))
+
+;; Determine whether my helper macro kill-leftover-buffers is working.
+(ert-deftest kill-leftover-buffers-test ()
+  (with-temp-buffer
+    (let ((buflist (buffer-list)))
+      (kill-leftover-buffers
+       (get-buffer-create "someotherbuffer"))
+      (should (equal buflist (buffer-list))))))
+
+;; Check that flykey-add-bindings does not modify the buffer-list.
+(ert-deftest flykey-test-buffer-list ()
+  (with-flykey-running
+   (select-window (get-buffer-window flykey-flybuf))
+   (end-of-buffer)
+   (insert "a=\\ant\n")
+   (let ((curbuflist (buffer-list)))
+     (flykey-add-bindings flykey-flybuf flykey-insertbuf)
+     (should (equal curbuflist (buffer-list))))))
 
 (provide 'flykey-test)
 ;;; flykey-test.el ends here

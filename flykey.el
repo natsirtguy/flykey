@@ -52,8 +52,9 @@
 
 (defun flykey-read-quoted-cmds (comquotes)
   "Read COMQUOTES, a list of quoted commands, and return a list of commands."
-  (if comquotes (cons (car (read-from-string (car comquotes)))
-		      (flykey-read-quoted-cmds (cdr comquotes)))
+  (if (and comquotes (not (string= (car comquotes) "")))
+      (cons (car (read-from-string (car comquotes)))
+	    (flykey-read-quoted-cmds (cdr comquotes)))
     nil))
 
 (defun flykey-eval-cmds (cmds)
@@ -98,7 +99,7 @@
       (let ((flybuf (find-file-noselect flyfile))
 	    (oldmajor major-mode))
 	(with-current-buffer flybuf
-	  (insert (concat "#" (format "%s" oldmajor))))
+	  (insert (concat "#" (format "%s" oldmajor) "\n")))
 	flybuf))))
 
 (defun flykey-open-windows (flybuf insertbuf)
@@ -113,9 +114,17 @@
     (with-current-buffer insertbuf
       (use-local-map pmap))
     (flykey-open-windows flybuf insertbuf)
+    ;; Require a final newline in flybuf.
+    (with-current-buffer flybuf
+      (make-local-variable 'require-final-newline)
+      (setq require-final-newline "visit-save"))
+    ;; Add the initial bindings.
     (flykey-add-bindings flybuf insertbuf)
-    ;; Add some keybindins to insert insertbuf or erase it.
+    ;; Add some keybindings to insert insertbuf or erase it.
     (with-current-buffer insertbuf
+      (local-set-key (kbd "C-c i") 'flykey-insert-and-close)
+      (local-set-key (kbd "C-c c") 'flykey-clear-insertbuf))
+    (with-current-buffer flybuf
       (local-set-key (kbd "C-c i") 'flykey-insert-and-close)
       (local-set-key (kbd "C-c c") 'flykey-clear-insertbuf))))
 
@@ -142,8 +151,10 @@
     (flykey-set-local-vars oldbuf oldbuf flybuf insertbuf)
     (flykey-set-local-vars flybuf oldbuf flybuf insertbuf)
     (flykey-set-local-vars insertbuf oldbuf flybuf insertbuf)
-    (with-current-buffer flybuf
-      (add-hook 'buffer-list-update-hook 'flykey-reload-map nil t))))
+    ;; Make a local hook to refresh keybindings when the window is changed.
+    ;; (with-current-buffer insertbuf
+    ;;   (add-hook 'buffer-list-update-hook 'flykey-reload-map nil t))
+    ))
 
 (defun flykey-close-windows ()
   "Close the windows associated with flybuf and insertbuf."
