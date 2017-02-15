@@ -100,20 +100,13 @@
        (get-buffer-create "someotherbuffer"))
       (should (equal buflist (buffer-list))))))
 
-;; Check that flykey-reload-map does not run the buffer-list-update-hook.
+;; Check that flykey-reload-map works.
 (ert-deftest flykey-test-buffer-list ()
   (with-flykey-running
    (select-window (get-buffer-window flykey-flybuf))
-   (end-of-buffer)
+   (goto-char (point-max))
    (insert "a=\\ant\n")
-   (defun flykey-check-update-reloading ()
-     (print "Watch out Peter!"))
-   (add-hook 'buffer-list-update-hook 'flykey-check-update-reloading)
-   (print "Begin sending script.")
-   ;; (let ((bufcontents (with-current-buffer flykey-flybuf (buffer-string))))
-   ;;   (shell-command-to-string (concat flykey-sh-file " \"" bufcontents "\"")))
-   (print "End sending script.")
-   (remove-hook 'buffer-list-update-hook 'flykey-check-update-reloading)))
+   (flykey-reload-map)))
 
 (provide 'flykey-test)
 ;;; flykey-test.el ends here

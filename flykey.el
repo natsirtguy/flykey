@@ -145,9 +145,10 @@
     (flykey-set-local-vars flybuf oldbuf flybuf insertbuf)
     (flykey-set-local-vars insertbuf oldbuf flybuf insertbuf)
     ;; Make a local hook to refresh keybindings when the window is changed.
-    ;; (with-current-buffer insertbuf
-    ;;   (add-hook 'buffer-list-update-hook 'flykey-reload-map nil t))
-    ))
+    (with-current-buffer insertbuf
+      (add-hook 'buffer-list-update-hook 'flykey-reload-map nil t))
+    (with-current-buffer flybuf
+      (add-hook 'buffer-list-update-hook 'flykey-reload-map nil t))))
 
 (defun flykey-close-windows ()
   "Close the windows associated with flybuf and insertbuf."
@@ -168,8 +169,19 @@
     (erase-buffer)))
 
 (defun flykey-reload-map ()
-  "Reload the keymap from flybuf."
-  (flykey-add-bindings flykey-flybuf flykey-insertbuf))
+  "Reload the keymap from flybuf.
+Because 'process-lines' changes the buffer list, and we want to use this as part
+of a hook which runs when the buffer list changes, we must remove it from the
+'buffer-list-update-hook' before adding the bindings, then restore the state."
+  (with-current-buffer flykey-insertbuf
+    (remove-hook 'buffer-list-update-hook 'flykey-reload-map t))
+  (with-current-buffer flykey-flybuf
+    (remove-hook 'buffer-list-update-hook 'flykey-reload-map t))
+  (flykey-add-bindings flykey-flybuf flykey-insertbuf)
+  (with-current-buffer flykey-insertbuf
+    (add-hook 'buffer-list-update-hook 'flykey-reload-map nil t))
+  (with-current-buffer flykey-flybuf
+    (add-hook 'buffer-list-update-hook 'flykey-reload-map nil t)))
 
 (provide 'flykey)
 ;;; flykey.el ends here

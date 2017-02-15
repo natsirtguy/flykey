@@ -47,12 +47,24 @@
   `(with-sandbox
     (with-temp-buffer
       (kill-leftover-buffers
-       (rename-buffer "flykey-running")
-       (lisp-mode)
-       ;; The window must be big enough to subdivide twice.
-       (set-frame-size (selected-frame) 80 48)
-       (flykey)
-       ,@body))))
+       (unwind-protect
+	   (progn
+	     (rename-buffer "flykey-running")
+	     (lisp-mode)
+	     ;; The window must be big enough to subdivide twice.
+	     (set-frame-size (selected-frame) 80 48)
+	     (flykey)
+	     ,@body)
+	 ;; Remove the hook before killing insertbuf.
+	 (progn
+	   (if (get-buffer flykey-insertbuf)
+	     (with-current-buffer flykey-insertbuf
+	       (remove-hook
+		'buffer-list-update-hook 'flykey-reload-map t)))
+	   (if (get-buffer flykey-flybuf)
+	     (with-current-buffer flykey-flybuf
+	       (remove-hook
+		'buffer-list-update-hook 'flykey-reload-map t)))))))))
 
 
 (require 'flykey (f-expand "flykey.el" flykey-code-path))
