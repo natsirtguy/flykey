@@ -23,7 +23,8 @@
 		    (concat flykey-test-path "/test.sh"))))
       (should
        (string=
-	results "These are the buffer contents: echoing in the dark\n")))))
+	(car results)
+	"These are the buffer contents: echoing in the dark")))))
 
 ;; Create the list of keymap commands using a .flyk buffer.
 (ert-deftest flykey-make-map-cmds-test ()

@@ -69,21 +69,14 @@
     (insert (with-current-buffer toinsert (buffer-string)))))
 
 (defun flykey-send-buffer-script (buf shfile)
-  "Send the contents of buffer-or-name BUF to script SHFILE and return the results as a string."
+  "Send the contents of buffer-or-name BUF to script SHFILE and return the results as a list of strings."
   (let ((bufcontents (with-current-buffer buf (buffer-string))))
-    (shell-command-to-string
-     (concat shfile " \"" bufcontents "\""))))
+    (process-lines shfile bufcontents)))
 
 (defun flykey-make-map-cmds (flybuf)
   "Make the list of keymap commands from a buffer FLYBUF in the .flyk format."
   (flykey-read-quoted-cmds
-   ;; Don't forget to split the string by newlines.
-   (split-string
-    ;; Remove the trailing newline from process.
-    (replace-regexp-in-string
-     "\n\\'" ""
-     (flykey-send-buffer-script flybuf flykey-sh-file))
-    "\n")))
+   (flykey-send-buffer-script flybuf flykey-sh-file)))
 
 (defun flykey-add-bindings (flybuf buf)
   "Add the keybindings described in FLYBUF to the keymap for BUF."
