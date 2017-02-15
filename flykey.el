@@ -68,9 +68,14 @@
   (with-current-buffer buf
     (insert (with-current-buffer toinsert (buffer-string)))))
 
+(defun flykey-input-no-map ()
+  "Take input from the minibuffer and insert it without using the keymap."
+  (interactive)
+  (insert (read-from-minibuffer "Input: ")))
+
 (defun flykey-send-buffer-script (buf shfile)
   "Send the contents of buffer-or-name BUF to script SHFILE and return the results as a list of strings."
-  (let ((bufcontents (with-current-buffer buf (buffer-string))))
+  (let ((bufcontents (with-current-buffer buf (concat (buffer-string) "\n"))))
     (process-lines shfile bufcontents)))
 
 (defun flykey-make-map-cmds (flybuf)
@@ -107,17 +112,14 @@
     (with-current-buffer insertbuf
       (use-local-map pmap))
     (flykey-open-windows flybuf insertbuf)
-    ;; Require a final newline in flybuf.
-    (with-current-buffer flybuf
-      (make-local-variable 'require-final-newline)
-      (setq require-final-newline "visit-save")
-      (goto-char (point-max)))
     ;; Add the initial bindings.
     (flykey-add-bindings flybuf insertbuf)
-    ;; Add some keybindings to insert insertbuf or erase it.
+    ;; Add some keybindings to insert insertbuf, erase it,
+    ;; or take input without the keymap from the minibuffer.
     (with-current-buffer insertbuf
       (local-set-key (kbd "C-c i") 'flykey-insert-and-close)
-      (local-set-key (kbd "C-c c") 'flykey-clear-insertbuf))
+      (local-set-key (kbd "C-c c") 'flykey-clear-insertbuf)
+      (local-set-key (kbd "C-c w") 'flykey-input-no-map))
     (with-current-buffer flybuf
       (local-set-key (kbd "C-c i") 'flykey-insert-and-close)
       (local-set-key (kbd "C-c c") 'flykey-clear-insertbuf))))
@@ -141,6 +143,8 @@
 	 (get-buffer-create
 	  (concat "*flykey-" (buffer-name (current-buffer)) "*"))))
     (flykey-set-up-buffers flybuf insertbuf)
+    (select-window (get-buffer-window flybuf))
+    (end-of-buffer)
     (select-window (get-buffer-window insertbuf))
     (flykey-set-local-vars oldbuf oldbuf flybuf insertbuf)
     (flykey-set-local-vars flybuf oldbuf flybuf insertbuf)
