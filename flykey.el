@@ -110,7 +110,8 @@
     ;; Require a final newline in flybuf.
     (with-current-buffer flybuf
       (make-local-variable 'require-final-newline)
-      (setq require-final-newline "visit-save"))
+      (setq require-final-newline "visit-save")
+      (goto-char (point-max)))
     ;; Add the initial bindings.
     (flykey-add-bindings flybuf insertbuf)
     ;; Add some keybindings to insert insertbuf or erase it.
