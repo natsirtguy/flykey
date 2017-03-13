@@ -118,11 +118,16 @@
     ;; or take input without the keymap from the minibuffer.
     (with-current-buffer insertbuf
       (local-set-key (kbd "C-c i") 'flykey-insert-and-close)
+      (local-set-key (kbd "H-i") 'flykey-insert-and-close)
       (local-set-key (kbd "C-c c") 'flykey-clear-insertbuf)
-      (local-set-key (kbd "C-c w") 'flykey-input-no-map))
+      (local-set-key (kbd "H-c") 'flykey-clear-insertbuf)
+      (local-set-key (kbd "C-c w") 'flykey-input-no-map)
+      (local-set-key (kbd "H-w") 'flykey-input-no-map))
     (with-current-buffer flybuf
       (local-set-key (kbd "C-c i") 'flykey-insert-and-close)
-      (local-set-key (kbd "C-c c") 'flykey-clear-insertbuf))))
+      (local-set-key (kbd "H-i") 'flykey-insert-and-close)
+      (local-set-key (kbd "C-c c") 'flykey-clear-insertbuf)
+      (local-set-key (kbd "H-c") 'flykey-clear-insertbuf))))
 
 (defun flykey-set-local-vars (buf oldbuf flybuf insertbuf)
   "In BUF, set local variables OLDBUF, FLYBUF, and INSERTBUF."
