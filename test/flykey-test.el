@@ -108,5 +108,14 @@
    (insert "a=\\ant\n")
    (flykey-reload-map)))
 
+;; Check that it is possible to kill the flykey buffers.
+(ert-deftest flykey-test-kill-buffer ()
+  (with-flykey-running
+   (kill-buffer flykey-flybuf))
+  (with-flykey-running
+   (kill-buffer flykey-insertbuf))
+  (with-flykey-running
+   (kill-buffer)))
+
 (provide 'flykey-test)
 ;;; flykey-test.el ends here
