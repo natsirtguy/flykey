@@ -2,8 +2,8 @@
 
 ;; Copyright (C) 2017 Tristan McKinney
 
-;; Author: Tristan McKinney <johan.rejeep@gmail.com>
-;; Maintainer: Tristan McKinney <johan.rejeep@gmail.com>
+;; Author: Tristan McKinney <natsirtguy@gmail.com>
+;; Maintainer: Tristan McKinney <natsirtguy@gmail.com>
 ;; Version: 0.0.1
 ;; URL: http://github.com/rejeep/prodigy.el
 ;; Package-Requires: ((emacs "24"))
