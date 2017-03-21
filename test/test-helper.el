@@ -57,11 +57,11 @@
 	     ,@body)
 	 ;; Remove the hook before killing insertbuf.
 	 (progn
-	   (if (get-buffer flykey-insertbuf)
+	   (if (buffer-live-p flykey-insertbuf)
 	     (with-current-buffer flykey-insertbuf
 	       (remove-hook
 		'buffer-list-update-hook 'flykey-reload-map t)))
-	   (if (get-buffer flykey-flybuf)
+	   (if (buffer-live-p flykey-flybuf)
 	     (with-current-buffer flykey-flybuf
 	       (remove-hook
 		'buffer-list-update-hook 'flykey-reload-map t)))))))))

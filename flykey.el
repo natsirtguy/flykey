@@ -183,15 +183,20 @@
 Because 'process-lines' changes the buffer list, and we want to use this as part
 of a hook which runs when the buffer list changes, we must remove it from the
 'buffer-list-update-hook' before adding the bindings, then restore the state."
-  (with-current-buffer flykey-insertbuf
-    (remove-hook 'buffer-list-update-hook 'flykey-reload-map t))
-  (with-current-buffer flykey-flybuf
-    (remove-hook 'buffer-list-update-hook 'flykey-reload-map t))
-  (flykey-add-bindings flykey-flybuf flykey-insertbuf)
-  (with-current-buffer flykey-insertbuf
-    (add-hook 'buffer-list-update-hook 'flykey-reload-map nil t))
-  (with-current-buffer flykey-flybuf
-    (add-hook 'buffer-list-update-hook 'flykey-reload-map nil t)))
+  (if (buffer-live-p  flykey-insertbuf)
+      (with-current-buffer flykey-insertbuf
+	(remove-hook 'buffer-list-update-hook 'flykey-reload-map t)))
+  (if (buffer-live-p  flykey-flybuf)
+      (with-current-buffer flykey-insertbuf
+	(remove-hook 'buffer-list-update-hook 'flykey-reload-map t)))
+  (if (and (buffer-live-p flykey-flybuf) (buffer-live-p flykey-insertbuf))
+      (flykey-add-bindings flykey-flybuf flykey-insertbuf))
+  (if (buffer-live-p  flykey-insertbuf)
+      (with-current-buffer flykey-flybuf
+	(remove-hook 'buffer-list-update-hook 'flykey-reload-map t)))
+  (if (buffer-live-p  flykey-flybuf)
+      (with-current-buffer flykey-insertbuf
+	(add-hook 'buffer-list-update-hook 'flykey-reload-map nil t))))
 
 (provide 'flykey)
 ;;; flykey.el ends here
