@@ -74,7 +74,7 @@
   (insert (read-from-minibuffer "Input: ")))
 
 (defun flykey-send-buffer-script (buf shfile)
-  "Send the contents of buffer-or-name BUF to script SHFILE and return the results as a list of strings."
+  "Send the contents of BUF to script SHFILE, return list of strings."
   (let ((bufcontents (with-current-buffer buf (concat (buffer-string) "\n"))))
     (process-lines shfile bufcontents)))
 
@@ -101,7 +101,7 @@
 	flybuf))))
 
 (defun flykey-open-windows (flybuf insertbuf)
-  "Split the current window, then split one of the halves and display FLYBUF and INSERTBUF there."
+  "Split current window and display FLYBUF and INSERTBUF."
   (set-window-buffer (split-window-below) insertbuf)
   (with-selected-window (get-buffer-window insertbuf)
     (set-window-buffer (split-window-below) flybuf)))
@@ -149,7 +149,7 @@
 	  (concat "*flykey-" (buffer-name (current-buffer)) "*"))))
     (flykey-set-up-buffers flybuf insertbuf)
     (select-window (get-buffer-window flybuf))
-    (end-of-buffer)
+    (goto-char (point-max))
     (select-window (get-buffer-window insertbuf))
     (flykey-set-local-vars oldbuf oldbuf flybuf insertbuf)
     (flykey-set-local-vars flybuf oldbuf flybuf insertbuf)
@@ -189,14 +189,44 @@ of a hook which runs when the buffer list changes, we must remove it from the
   (if (buffer-live-p  flykey-flybuf)
       (with-current-buffer flykey-insertbuf
 	(remove-hook 'buffer-list-update-hook 'flykey-reload-map t)))
-  (if (and (buffer-live-p flykey-flybuf) (buffer-live-p flykey-insertbuf))
-      (flykey-add-bindings flykey-flybuf flykey-insertbuf))
+  (if (and
+       (buffer-live-p flykey-flybuf)
+       (buffer-live-p flykey-insertbuf)
+       (buffer-modified-p flykey-flybuf))
+      (progn
+	(flykey-redo-bindings)
+	(with-current-buffer flykey-flybuf
+	  (set-buffer-modified-p nil))))
   (if (buffer-live-p  flykey-insertbuf)
       (with-current-buffer flykey-flybuf
 	(remove-hook 'buffer-list-update-hook 'flykey-reload-map t)))
   (if (buffer-live-p  flykey-flybuf)
       (with-current-buffer flykey-insertbuf
 	(add-hook 'buffer-list-update-hook 'flykey-reload-map nil t))))
+
+(defun flykey-redo-bindings ()
+  "Remake the keymap."
+  (let ((pmap
+	 (with-current-buffer flykey-oldbuf
+	   (copy-keymap (current-local-map)))))
+    (with-current-buffer flykey-insertbuf
+      (use-local-map pmap))
+    ;; Add the initial bindings.
+    (flykey-add-bindings flykey-flybuf flykey-insertbuf)
+    ;; Add some keybindings to insert insertbuf, erase it,
+    ;; or take input without the keymap from the minibuffer.
+    (with-current-buffer flykey-insertbuf
+      (local-set-key (kbd "C-c i") 'flykey-insert-and-close)
+      (local-set-key (kbd "H-i") 'flykey-insert-and-close)
+      (local-set-key (kbd "C-c c") 'flykey-clear-insertbuf)
+      (local-set-key (kbd "H-c") 'flykey-clear-insertbuf)
+      (local-set-key (kbd "C-c w") 'flykey-input-no-map)
+      (local-set-key (kbd "H-w") 'flykey-input-no-map))
+    (with-current-buffer flykey-flybuf
+      (local-set-key (kbd "C-c i") 'flykey-insert-and-close)
+      (local-set-key (kbd "H-i") 'flykey-insert-and-close)
+      (local-set-key (kbd "C-c c") 'flykey-clear-insertbuf)
+      (local-set-key (kbd "H-c") 'flykey-clear-insertbuf))))
 
 (provide 'flykey)
 ;;; flykey.el ends here
