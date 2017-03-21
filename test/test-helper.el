@@ -33,20 +33,11 @@
      (let ((flykey-dir flykey-sandbox-path))
        ,@body)))
 
-(defmacro kill-leftover-buffers (&rest body)
-  "Kill any new buffers created during evaluation of BODY."
-  `(let ((oldbufs (buffer-list)))
-     (unwind-protect
-	 (progn
-	   ,@body)
-       (dolist (extrabufs (set-difference (buffer-list) oldbufs))
-	 (kill-buffer extrabufs)))))
-
 (defmacro with-flykey-running (&rest body)
   "Evaluate BODY with FlyKey running in a 'lisp-mode' buffer."
   `(with-sandbox
     (with-temp-buffer
-      (kill-leftover-buffers
+      (save-window-excursion
        (unwind-protect
 	   (progn
 	     (rename-buffer "flykey-running")
