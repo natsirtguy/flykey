@@ -5,7 +5,7 @@ in Emacs by allowing you to insert text with a custom, on-the-fly set
 of keybindings.
 
 ## To do:
-* Delete keybindings when you remove them from the flyk file.
-* Fix bug that prevents killing the insertbuf.
 * Replace shell script functionality with Emacs Lisp code.
-* Don't compile the keymap unless there is a valide line in the flyk file.
+* Don't compile the keymap unless there is a valid line in the flyk file.
+* Fix bug which is preventing new flyk files from being made.
+* Find source of "selecting deleted buffer" error.
