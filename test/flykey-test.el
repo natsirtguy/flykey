@@ -101,7 +101,7 @@
       (should (equal buflist (buffer-list))))))
 
 ;; Check that flykey-reload-map works.
-(ert-deftest flykey-test-buffer-list ()
+(ert-deftest flykey-buffer-list-test ()
   (with-flykey-running
    (select-window (get-buffer-window flykey-flybuf))
    (goto-char (point-max))
@@ -109,7 +109,7 @@
    (flykey-reload-map)))
 
 ;; Check that it is possible to kill the flykey buffers.
-(ert-deftest flykey-test-kill-buffer ()
+(ert-deftest flykey-kill-buffer-test ()
   (with-flykey-running
    (kill-buffer flykey-flybuf))
   (with-flykey-running
