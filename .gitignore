@@ -1,0 +1,5 @@
+*~
+.cask/
+*.elc
+flyks/
+test/sandbox/
