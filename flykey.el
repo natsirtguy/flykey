@@ -6,33 +6,26 @@
 ;; Maintainer: Tristan McKinney <natsirtguy@gmail.com>
 ;; Version: 0.1.0
 ;; URL:
-;; Package-Requires: ((emacs "24"))
-
-;; This file is NOT part of GNU Emacs.
+;; Package-Requires: ((emacs "24") (f "0.16.0"))
 
 ;;; License:
 
-;; MIT License
+;; This file is NOT part of GNU Emacs.
 
-;; Permission is hereby granted, free of charge, to any person
-;; obtaining a copy of this software and associated documentation
-;; files (the "Software"), to deal in the Software without
-;; restriction, including without limitation the rights to use, copy,
-;; modify, merge, publish, distribute, sublicense, and/or sell copies
-;; of the Software, and to permit persons to whom the Software is
-;; furnished to do so, subject to the following conditions:
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation; either version 3, or (at your option)
+;; any later version.
 
-;; The above copyright notice and this permission notice shall be
-;; included in all copies or substantial portions of the Software.
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
 
-;; THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-;; EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-;; MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-;; NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
-;; BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
-;; ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-;; CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-;; SOFTWARE.
+;; You should have received a copy of the GNU General Public License
+;; along with GNU Emacs; see the file COPYING.  If not, write to the
+;; Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+;; Boston, MA 02110-1301, USA.
 
 ;;; Commentary:
 ;; flykey.el is a tool to rapidly insert specialized text, like LaTeX
@@ -78,16 +71,26 @@
 
 (defun flykey-create-quoted-cmds (flybuf)
   "Create the list of commands to make the keymap using FLYBUF."
-  )
-
-(defun flykey-create-cmd-pairs (flybuf)
-  "Create a list cons cells of keys and keybindings using FLYBUF."
-  (let ((lines
-	 (cdr (split-string
-	       (with-current-buffer flybuf (buffer-string) "\n")))))
+  (let ((cmdpairs
+	 (flykey-create-cmd-pairs
+	  (with-current-buffer flybuf (buffer-string)))))
     (let (cmds)
-      (dolist (line lines cmds)
-	(setq cmds (cons cmds (split-string line "=")))))))
+      (dolist (cmdpair cmdpairs cmds)
+	(setq
+	 cmds
+	 (cons (concat "(local-set-key (kbd \""
+		       (car cmdpair)
+		       "\" ) (lambda () (interactive) (insert \""
+		       (car (cdr cmdpair))
+		       "\")))")
+	       cmds))))))
+
+(defun flykey-create-cmd-pairs (bufstr)
+  "Create a list cons cells of keys and keybindings from string BUFSTR."
+  (let ((lines (cdr (split-string bufstr "\n"))))
+    (let (cmdpairs)
+      (dolist (line lines cmdpairs)
+	(setq cmdpairs (cons (split-string line "=") cmdpairs))))))
 
 (defun flykey-make-map-cmds (flybuf)
   "Make the list of keymap commands from a buffer FLYBUF in the .flyk format."

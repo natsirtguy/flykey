@@ -14,17 +14,17 @@
      (equal (flykey-read-quoted-cmds comquotes) coms))))
 
 ;; Create the list of keymap commands using a .flyk buffer.
-(ert-deftest flykey-make-map-cmds-test ()
-  (let ((testf (concat flykey-test-path "/test.flyk"))
-	(cmdlist
-	 (list
-	  '(local-set-key (kbd "i")
-			  (lambda () (interactive) (insert "\\int")))
-	  '(local-set-key (kbd "u")
-			  (lambda () (interactive) (insert "awesome"))))))
-    (with-temp-buffer
-      (insert-file-contents testf)
-      (should (equal cmdlist (flykey-make-map-cmds (current-buffer)))))))
+;; (ert-deftest flykey-make-map-cmds-test ()
+;;   (let ((testf (concat flykey-test-path "/test.flyk"))
+;; 	(cmdlist
+;; 	 (list
+;; 	  '(local-set-key (kbd "i")
+;; 			  (lambda () (interactive) (insert "\\int")))
+;; 	  '(local-set-key (kbd "u")
+;; 			  (lambda () (interactive) (insert "awesome"))))))
+;;     (with-temp-buffer
+;;       (insert-file-contents testf)
+;;       (should (equal cmdlist (flykey-make-map-cmds (current-buffer)))))))
 
 ;; Evaluate a list of commands in a buffer.
 (ert-deftest flykey-eval-cmds-test ()
@@ -79,7 +79,7 @@
 	       (with-current-buffer flybuf (buffer-string))))
 	  (should (string= flybufcontents "#lisp-mode\n t=that \n"))))))))
 
-;; Determine whether my helper macro kill-leftover-buffers is working.
+;; Determine whether helper macro kill-leftover-buffers is working.
 (ert-deftest kill-leftover-buffers-test ()
   (with-temp-buffer
     (let ((buflist (buffer-list)))
@@ -96,13 +96,26 @@
    (flykey-reload-map)))
 
 ;; Check that it is possible to kill the flykey buffers.
-(ert-deftest flykey-kill-buffer-test ()
-  (with-flykey-running
-   (kill-buffer flykey-flybuf))
-  (with-flykey-running
-   (kill-buffer flykey-insertbuf))
-  (with-flykey-running
-   (kill-buffer)))
+;; (ert-deftest flykey-kill-buffer-test ()
+;;   (with-flykey-running
+;;    (kill-buffer flykey-flybuf))
+;;   (with-flykey-running
+;;    (kill-buffer flykey-insertbuf))
+;;   (with-flykey-running
+;;    (kill-buffer)))
+
+;; Check that we correctly generate the pairs of commands.
+(ert-deftest flykey-create-cmd-pairs-test ()
+  (let ((bufstr "blah \nt=this\nw=who"))
+    (should (equal
+	     (flykey-create-cmd-pairs bufstr)
+	     '(("w" "who") ("t" "this"))))))
+
+;; Check that list of commands is correctly created.
+(ert-deftest flykey-create-quoted-cmds-test ()
+  (with-temp-buffer
+    (insert "blah \nt=this\nw=who\na=\\ant")
+    (flykey-create-quoted-cmds (current-buffer))))
 
 (provide 'flykey-test)
 ;;; flykey-test.el ends here
