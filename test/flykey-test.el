@@ -13,19 +13,6 @@
     (should
      (equal (flykey-read-quoted-cmds comquotes) coms))))
 
-;; Send the contents of a buffer to a shell script and return the results.
-(ert-deftest flykey-send-buffer-script-test ()
-  (with-temp-buffer
-    (insert "echoing in the dark")
-    (let ((results (flykey-send-buffer-script
-		    (current-buffer)
-		    ;; flykey-test-path is defined in test-helper.el
-		    (concat flykey-test-path "/test.sh"))))
-      (should
-       (string=
-	(car results)
-	"These are the buffer contents: echoing in the dark")))))
-
 ;; Create the list of keymap commands using a .flyk buffer.
 (ert-deftest flykey-make-map-cmds-test ()
   (let ((testf (concat flykey-test-path "/test.flyk"))

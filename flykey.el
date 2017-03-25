@@ -46,10 +46,6 @@
   (f-dirname (f-this-file))
   "The directory containing this file.")
 
-(defconst flykey-sh-file
-  (concat flykey-dir "/flykey.sh")
-  "The shell file used to create keybindings.")
-
 ;; These three variables will correspond to the buffer-local names of the
 ;; original buffer from which FlyKey is run, the buffer with the keybindings,
 ;; and the buffer from which text is inserted.
@@ -80,15 +76,23 @@
   (interactive)
   (insert (read-from-minibuffer "Input: ")))
 
-(defun flykey-send-buffer-script (buf shfile)
-  "Send the contents of BUF to script SHFILE, return list of strings."
-  (let ((bufcontents (with-current-buffer buf (concat (buffer-string) "\n"))))
-    (process-lines shfile bufcontents)))
+(defun flykey-create-quoted-cmds (flybuf)
+  "Create the list of commands to make the keymap using FLYBUF."
+  )
+
+(defun flykey-create-cmd-pairs (flybuf)
+  "Create a list cons cells of keys and keybindings using FLYBUF."
+  (let ((lines
+	 (cdr (split-string
+	       (with-current-buffer flybuf (buffer-string) "\n")))))
+    (let (cmds)
+      (dolist (line lines cmds)
+	(setq cmds (cons cmds (split-string line "=")))))))
 
 (defun flykey-make-map-cmds (flybuf)
   "Make the list of keymap commands from a buffer FLYBUF in the .flyk format."
   (flykey-read-quoted-cmds
-   (flykey-send-buffer-script flybuf flykey-sh-file)))
+   (flykey-create-quoted-cmds flybuf)))
 
 (defun flykey-add-bindings (flybuf buf)
   "Add the keybindings described in FLYBUF to the keymap for BUF."
