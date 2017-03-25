@@ -6,11 +6,11 @@ created on the fly.
 
 # Installation
 
-# Built With
+# Built Using
 * [Cask](https://cask.readthedocs.io/en/latest/)
 * [ert-runner.el](https://github.com/rejeep/ert-runner.el)
 
 ## To do:
 * Fix bug which is preventing new flyk files from being made.
 * Find source of "selecting deleted buffer" error.
-* Add installation information and include readme generally.
+* Add installation information and improve readme generally.
