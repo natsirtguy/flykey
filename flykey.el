@@ -72,18 +72,32 @@
 (defun flykey-create-quoted-cmds (flybuf)
   "Create the list of commands to make the keymap using FLYBUF."
   (let ((cmdpairs
-	 (flykey-create-cmd-pairs
-	  (with-current-buffer flybuf (buffer-string)))))
+	 (flykey-double-backslashes
+	  (flykey-create-cmd-pairs
+	   (with-current-buffer flybuf (buffer-string))))))
     (let (cmds)
       (dolist (cmdpair cmdpairs cmds)
 	(setq
-	 cmds
-	 (cons (concat "(local-set-key (kbd \""
-		       (car cmdpair)
-		       "\" ) (lambda () (interactive) (insert \""
-		       (car (cdr cmdpair))
-		       "\")))")
-	       cmds))))))
+    	 cmds
+    	 (cons (concat "(local-set-key (kbd \""
+    		       (car cmdpair)
+    		       "\" ) (lambda () (interactive) (insert \""
+    		       (cdr cmdpair)
+    		       "\")))")
+    	       cmds))))))
+
+(defun flykey-double-backslashes (cmdpairs)
+  "Double all of the backslashes in the bindings in CMDPAIRS."
+  (let (newpairs)
+    (dolist (pair cmdpairs newpairs)
+      (if (car (cdr pair))
+	  (setq
+	   newpairs
+	   (cons
+	    (cons
+	     (car pair)
+	     (replace-regexp-in-string "[\\.]" "\\\\" (car (cdr pair)) nil t))
+	    newpairs))))))
 
 (defun flykey-create-cmd-pairs (bufstr)
   "Create a list cons cells of keys and keybindings from string BUFSTR."

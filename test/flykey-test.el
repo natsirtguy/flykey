@@ -14,17 +14,17 @@
      (equal (flykey-read-quoted-cmds comquotes) coms))))
 
 ;; Create the list of keymap commands using a .flyk buffer.
-;; (ert-deftest flykey-make-map-cmds-test ()
-;;   (let ((testf (concat flykey-test-path "/test.flyk"))
-;; 	(cmdlist
-;; 	 (list
-;; 	  '(local-set-key (kbd "i")
-;; 			  (lambda () (interactive) (insert "\\int")))
-;; 	  '(local-set-key (kbd "u")
-;; 			  (lambda () (interactive) (insert "awesome"))))))
-;;     (with-temp-buffer
-;;       (insert-file-contents testf)
-;;       (should (equal cmdlist (flykey-make-map-cmds (current-buffer)))))))
+(ert-deftest flykey-make-map-cmds-test ()
+  (let ((testf (concat flykey-test-path "/test.flyk"))
+	(cmdlist
+	 (list
+	  '(local-set-key (kbd "u")
+			  (lambda () (interactive) (insert "awesome")))
+	  '(local-set-key (kbd "i")
+			  (lambda () (interactive) (insert "\\int"))))))
+    (with-temp-buffer
+      (insert-file-contents testf)
+      (should (equal cmdlist (flykey-make-map-cmds (current-buffer)))))))
 
 ;; Evaluate a list of commands in a buffer.
 (ert-deftest flykey-eval-cmds-test ()
@@ -37,10 +37,10 @@
 (ert-deftest flykey-add-bindings-test ()
   (let ((byhand
 	 (with-temp-buffer
-	   (local-set-key (kbd "i")
-			  (lambda () (interactive) (insert "\\int")))
 	   (local-set-key (kbd "u")
 			  (lambda () (interactive) (insert "awesome")))
+	   (local-set-key (kbd "i")
+			  (lambda () (interactive) (insert "\\int")))
 	   (current-local-map)))
 	(testf (concat flykey-test-path "/test.flyk")))
     (with-temp-buffer
@@ -96,13 +96,13 @@
    (flykey-reload-map)))
 
 ;; Check that it is possible to kill the flykey buffers.
-;; (ert-deftest flykey-kill-buffer-test ()
-;;   (with-flykey-running
-;;    (kill-buffer flykey-flybuf))
-;;   (with-flykey-running
-;;    (kill-buffer flykey-insertbuf))
-;;   (with-flykey-running
-;;    (kill-buffer)))
+(ert-deftest flykey-kill-buffer-test ()
+  (with-flykey-running
+   (kill-buffer flykey-flybuf))
+  (with-flykey-running
+   (kill-buffer flykey-insertbuf))
+  (with-flykey-running
+   (kill-buffer)))
 
 ;; Check that we correctly generate the pairs of commands.
 (ert-deftest flykey-create-cmd-pairs-test ()
@@ -111,11 +111,21 @@
 	     (flykey-create-cmd-pairs bufstr)
 	     '(("w" "who") ("t" "this"))))))
 
+;; Check that we are correclty doubling backslashes.
+(ert-deftest flykey-backslashes-test ()
+  (should
+   (equal (flykey-double-backslashes '(("c" "\\b") ("d" "\\b") ("e" "\\b")))
+	  '(("e" . "\\\\b") ("d" . "\\\\b") ("c" . "\\\\b")))))
+
 ;; Check that list of commands is correctly created.
 (ert-deftest flykey-create-quoted-cmds-test ()
   (with-temp-buffer
-    (insert "blah \nt=this\nw=who\na=\\ant")
-    (flykey-create-quoted-cmds (current-buffer))))
+    (insert "blah \nt=this\na=\\ant\n")
+    (should
+     (equal
+      (flykey-create-quoted-cmds (current-buffer))
+      '("(local-set-key (kbd \"a\" ) (lambda () (interactive) (insert \"\\\\ant\")))"
+	"(local-set-key (kbd \"t\" ) (lambda () (interactive) (insert \"this\")))")))))
 
 (provide 'flykey-test)
 ;;; flykey-test.el ends here
