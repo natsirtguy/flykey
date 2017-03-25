@@ -4,28 +4,35 @@
 
 ;; Author: Tristan McKinney <natsirtguy@gmail.com>
 ;; Maintainer: Tristan McKinney <natsirtguy@gmail.com>
-;; Version: 0.0.1
-;; URL: http://github.com/rejeep/prodigy.el
+;; Version: 0.1.0
+;; URL:
 ;; Package-Requires: ((emacs "24"))
 
 ;; This file is NOT part of GNU Emacs.
 
 ;;; License:
 
-;; This program is free software; you can redistribute it and/or modify
-;; it under the terms of the GNU General Public License as published by
-;; the Free Software Foundation; either version 3, or (at your option)
-;; any later version.
+;; MIT License
 
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;; GNU General Public License for more details.
+;; Permission is hereby granted, free of charge, to any person
+;; obtaining a copy of this software and associated documentation
+;; files (the "Software"), to deal in the Software without
+;; restriction, including without limitation the rights to use, copy,
+;; modify, merge, publish, distribute, sublicense, and/or sell copies
+;; of the Software, and to permit persons to whom the Software is
+;; furnished to do so, subject to the following conditions:
 
-;; You should have received a copy of the GNU General Public License
-;; along with GNU Emacs; see the file COPYING.  If not, write to the
-;; Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
-;; Boston, MA 02110-1301, USA.
+;; The above copyright notice and this permission notice shall be
+;; included in all copies or substantial portions of the Software.
+
+;; THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+;; EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+;; MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+;; NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+;; BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+;; ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+;; CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+;; SOFTWARE.
 
 ;;; Commentary:
 ;; flykey.el is a tool to rapidly insert specialized text, like LaTeX
@@ -108,22 +115,31 @@
 
 (defun flykey-set-up-buffers (flybuf insertbuf)
   "Open the windows for FLYBUF and INSERTBUF and apply the keybindings."
-  (let ((pmap (copy-keymap (current-local-map))))
-    (with-current-buffer insertbuf
-      (use-local-map pmap))
+  (let ((flykey-flybuf flybuf)
+	(flykey-insertbuf insertbuf)
+	(flykey-oldbuf (current-buffer)))
     (flykey-open-windows flybuf insertbuf)
+    (flykey-redo-bindings)))
+
+(defun flykey-redo-bindings ()
+  "Make the keymap and apply the keybindings."
+  (let ((pmap
+	 (with-current-buffer flykey-oldbuf
+	   (copy-keymap (current-local-map)))))
+    (with-current-buffer flykey-insertbuf
+      (use-local-map pmap))
     ;; Add the initial bindings.
-    (flykey-add-bindings flybuf insertbuf)
+    (flykey-add-bindings flykey-flybuf flykey-insertbuf)
     ;; Add some keybindings to insert insertbuf, erase it,
     ;; or take input without the keymap from the minibuffer.
-    (with-current-buffer insertbuf
+    (with-current-buffer flykey-insertbuf
       (local-set-key (kbd "C-c i") 'flykey-insert-and-close)
       (local-set-key (kbd "H-i") 'flykey-insert-and-close)
       (local-set-key (kbd "C-c c") 'flykey-clear-insertbuf)
       (local-set-key (kbd "H-c") 'flykey-clear-insertbuf)
       (local-set-key (kbd "C-c w") 'flykey-input-no-map)
       (local-set-key (kbd "H-w") 'flykey-input-no-map))
-    (with-current-buffer flybuf
+    (with-current-buffer flykey-flybuf
       (local-set-key (kbd "C-c i") 'flykey-insert-and-close)
       (local-set-key (kbd "H-i") 'flykey-insert-and-close)
       (local-set-key (kbd "C-c c") 'flykey-clear-insertbuf)
@@ -203,30 +219,6 @@ of a hook which runs when the buffer list changes, we must remove it from the
   (if (buffer-live-p  flykey-flybuf)
       (with-current-buffer flykey-insertbuf
 	(add-hook 'buffer-list-update-hook 'flykey-reload-map nil t))))
-
-(defun flykey-redo-bindings ()
-  "Remake the keymap."
-  (let ((pmap
-	 (with-current-buffer flykey-oldbuf
-	   (copy-keymap (current-local-map)))))
-    (with-current-buffer flykey-insertbuf
-      (use-local-map pmap))
-    ;; Add the initial bindings.
-    (flykey-add-bindings flykey-flybuf flykey-insertbuf)
-    ;; Add some keybindings to insert insertbuf, erase it,
-    ;; or take input without the keymap from the minibuffer.
-    (with-current-buffer flykey-insertbuf
-      (local-set-key (kbd "C-c i") 'flykey-insert-and-close)
-      (local-set-key (kbd "H-i") 'flykey-insert-and-close)
-      (local-set-key (kbd "C-c c") 'flykey-clear-insertbuf)
-      (local-set-key (kbd "H-c") 'flykey-clear-insertbuf)
-      (local-set-key (kbd "C-c w") 'flykey-input-no-map)
-      (local-set-key (kbd "H-w") 'flykey-input-no-map))
-    (with-current-buffer flykey-flybuf
-      (local-set-key (kbd "C-c i") 'flykey-insert-and-close)
-      (local-set-key (kbd "H-i") 'flykey-insert-and-close)
-      (local-set-key (kbd "C-c c") 'flykey-clear-insertbuf)
-      (local-set-key (kbd "H-c") 'flykey-clear-insertbuf))))
 
 (provide 'flykey)
 ;;; flykey.el ends here
