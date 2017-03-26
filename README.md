@@ -22,7 +22,7 @@ original buffer at the point using `C-c i`. `C-c w` will open a
 minibuffer which will allow you to insert text without the keybindings
 you have specified. `C-c c` clears the insertbuf. You can also save
 your flybuf modifications for future use when editing documents with
-the same major mode.
+the same major mode. Editing the flybuf will update the keybindings.
 
 # Installation
 Put `flykey.el` somewhere in your `load-path`.
