@@ -6,7 +6,7 @@
 ;; Maintainer: Tristan McKinney <natsirtguy@gmail.com>
 ;; Version: 0.1.0
 ;; URL:
-;; Package-Requires: ((emacs "24") (f "0.16.0"))
+;; Package-Requires: ((f "0.19.0"))
 
 ;;; License:
 

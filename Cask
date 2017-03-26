@@ -3,7 +3,7 @@
 
 (package-file "flykey.el")
 
-(files "flykey.el" "emacs-lisp-mode.el" "flywawk.sh")
+(files "flykey.el")
 
 (depends-on "f")
 
