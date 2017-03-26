@@ -127,5 +127,13 @@
       '("(local-set-key (kbd \"a\" ) (lambda () (interactive) (insert \"\\\\ant\")))"
 	"(local-set-key (kbd \"t\" ) (lambda () (interactive) (insert \"this\")))")))))
 
+;; Check that flykey works with a file in fundamental mode (no keymap).
+(ert-deftest flykey-fundamental-mode-test ()
+  (with-sandbox
+   (kill-leftover-buffers
+    (fundamental-mode)
+    (set-frame-size (selected-frame) 80 48)
+    (flykey))))
+
 (provide 'flykey-test)
 ;;; flykey-test.el ends here

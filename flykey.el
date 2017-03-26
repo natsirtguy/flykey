@@ -146,7 +146,10 @@
   "Make the keymap and apply the keybindings."
   (let ((pmap
 	 (with-current-buffer flykey-oldbuf
-	   (copy-keymap (current-local-map)))))
+	   ;; Make sure pmap is actually a kemap (it's nil in fundamental mode).
+	   (if (keymapp (current-local-map))
+	       (copy-keymap (current-local-map))
+	     (make-sparse-keymap)))))
     (with-current-buffer flykey-insertbuf
       (use-local-map pmap))
     ;; Add the initial bindings.
