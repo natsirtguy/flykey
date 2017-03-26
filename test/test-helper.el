@@ -3,9 +3,9 @@
 ;;; Commentary:
 ;; Helper for flykey-test.
 
-;;; Code:
-
 ;; Thanks to http://rejeep.github.io/emacs/testing/cask/ert-runner/2013/09/26/unit-testing-in-emacs.html
+
+;;; Code:
 
 (require 'f)
 (require 'cl)
