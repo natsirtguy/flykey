@@ -5,6 +5,7 @@
 ;; Author: Tristan McKinney <natsirtguy@gmail.com>
 ;; Maintainer: Tristan McKinney <natsirtguy@gmail.com>
 ;; Version: 0.1.0
+;; Keywords: convenience
 ;; URL: https://github.com/natsirtguy/flykey
 ;; Package-Requires: ((f "0.19.0"))
 
