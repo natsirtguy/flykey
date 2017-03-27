@@ -32,9 +32,6 @@ Put `flykey.el` somewhere in your `load-path`.
 * [ert-runner.el](https://github.com/rejeep/ert-runner.el)
 
 ## To do:
-* Fix bug which is preventing new flyk files from being made.
-* Find source of "selecting deleted buffer" error.
-* Add installation information and improve README generally.
 * Add customization options, such as whether to hide the buffers after
 text is inserted, create a flyk file for each major mode or each file,
 etc.

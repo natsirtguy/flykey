@@ -45,28 +45,16 @@
 (defmacro with-flykey-running (&rest body)
   "Evaluate BODY with FlyKey running in a 'lisp-mode' buffer."
   `(with-sandbox
-    (with-temp-buffer
-      (kill-leftover-buffers
-       (unwind-protect
-	   (progn
-	     (rename-buffer "flykey-running")
-	     (lisp-mode)
-	     ;; The window must be big enough to subdivide twice.
-	     (set-frame-size (selected-frame) 80 48)
-	     (flykey)
-	     ,@body)
-	 ;; Remove the hook before killing insertbuf.
+    (save-window-excursion
+      (with-temp-buffer
+	(kill-leftover-buffers
 	 (progn
-	   (if (and (boundp 'flykey-insertbuf)
-		    (buffer-live-p flykey-insertbuf))
-	     (with-current-buffer flykey-insertbuf
-	       (remove-hook
-		'buffer-list-update-hook 'flykey-reload-map t)))
-	   (if (and (boundp 'flykey-flybuf)
-		    (buffer-live-p flykey-flybuf))
-	     (with-current-buffer flykey-flybuf
-	       (remove-hook
-		'buffer-list-update-hook 'flykey-reload-map t)))))))))
+	       (rename-buffer "flykey-running")
+	       (lisp-mode)
+	       ;; The window must be big enough to subdivide twice.
+	       (set-frame-size (selected-frame) 80 48)
+	       (flykey)
+	       ,@body))))))
 
 
 (require 'flykey (f-expand "flykey.el" flykey-code-path))

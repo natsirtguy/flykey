@@ -146,7 +146,7 @@
   "Make the keymap and apply the keybindings."
   (let ((pmap
 	 (with-current-buffer flykey-oldbuf
-	   ;; Make sure pmap is actually a kemap (it's nil in fundamental mode).
+	   ;; Make sure pmap is actually a keymap.
 	   (if (keymapp (current-local-map))
 	       (copy-keymap (current-local-map))
 	     (make-sparse-keymap)))))
@@ -223,26 +223,25 @@
 Because 'process-lines' changes the buffer list, and we want to use this as part
 of a hook which runs when the buffer list changes, we must remove it from the
 'buffer-list-update-hook' before adding the bindings, then restore the state."
-  (if (buffer-live-p  flykey-insertbuf)
-      (with-current-buffer flykey-insertbuf
-	(remove-hook 'buffer-list-update-hook 'flykey-reload-map t)))
-  (if (buffer-live-p  flykey-flybuf)
-      (with-current-buffer flykey-insertbuf
-	(remove-hook 'buffer-list-update-hook 'flykey-reload-map t)))
-  (if (and
-       (buffer-live-p flykey-flybuf)
-       (buffer-live-p flykey-insertbuf)
-       (buffer-modified-p flykey-flybuf))
-      (progn
-	(flykey-redo-bindings)
-	(with-current-buffer flykey-flybuf
-	  (set-buffer-modified-p nil))))
-  (if (buffer-live-p  flykey-insertbuf)
-      (with-current-buffer flykey-flybuf
-	(remove-hook 'buffer-list-update-hook 'flykey-reload-map t)))
-  (if (buffer-live-p  flykey-flybuf)
-      (with-current-buffer flykey-insertbuf
-	(add-hook 'buffer-list-update-hook 'flykey-reload-map nil t))))
+  (if (and (boundp 'flykey-insertbuf)
+	   (boundp 'flykey-flybuf))
+      (if (and (buffer-live-p flykey-insertbuf)
+	       (buffer-live-p flykey-flybuf))
+	  (progn
+	    (with-current-buffer flykey-insertbuf
+	      (remove-hook 'buffer-list-update-hook 'flykey-reload-map t))
+	    (with-current-buffer flykey-insertbuf
+	      (remove-hook 'buffer-list-update-hook 'flykey-reload-map t))
+	    (if (buffer-modified-p flykey-flybuf)
+		(progn
+		  (flykey-redo-bindings)
+		  (with-current-buffer flykey-flybuf
+		    (set-buffer-modified-p nil))))
+	    (with-current-buffer flykey-flybuf
+	      (remove-hook 'buffer-list-update-hook 'flykey-reload-map t))
+	    (with-current-buffer flykey-insertbuf
+	      (add-hook 'buffer-list-update-hook 'flykey-reload-map nil t))))
+     (error "One of the necessary buffers is not correctly bound")))
 
 (provide 'flykey)
 ;;; flykey.el ends here
