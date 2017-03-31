@@ -106,21 +106,29 @@
 
 ;; Check that we correctly generate the pairs of commands.
 (ert-deftest flykey-create-cmd-pairs-test ()
-  (let ((bufstr "blah \nt=this\nw=who"))
+  (let ((bufstr "blah \nt=this\nw=who\ne=a=b"))
     (should (equal
 	     (flykey-create-cmd-pairs bufstr)
-	     '(("w" "who") ("t" "this"))))))
+	     '(("e" . "a=b") ("w" . "who") ("t" . "this"))))))
 
-;; Check that we are correclty doubling backslashes.
+;; Check that we are correctly doubling backslashes.
 (ert-deftest flykey-backslashes-test ()
   (should
-   (equal (flykey-double-backslashes '(("c" "\\b") ("d" "\\b") ("e" "\\b")))
+   (equal (flykey-escape-bindings '(("c" . "\\b")
+				       ("d" . "\\b")
+				       ("e" . "\\b")))
 	  '(("e" . "\\\\b") ("d" . "\\\\b") ("c" . "\\\\b")))))
+
+;; Check that we are correctly escaping quotes.
+(ert-deftest flykey-quote-test ()
+  (should
+   (equal (flykey-escape-bindings '(("c" . "\"b")))
+	  '(("c" . "\\\"b")))))
 
 ;; Check that list of commands is correctly created.
 (ert-deftest flykey-create-quoted-cmds-test ()
   (with-temp-buffer
-    (insert "blah \nt=this\na=\\ant\n")
+    (insert "blah \nt=this\na=\\ant\n\n\n")
     (should
      (equal
       (flykey-create-quoted-cmds (current-buffer))

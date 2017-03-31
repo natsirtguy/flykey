@@ -73,7 +73,7 @@
 (defun flykey-create-quoted-cmds (flybuf)
   "Create the list of commands to make the keymap using FLYBUF."
   (let ((cmdpairs
-	 (flykey-double-backslashes
+	 (flykey-escape-bindings
 	  (flykey-create-cmd-pairs
 	   (with-current-buffer flybuf (buffer-string))))))
     (let (cmds)
@@ -87,25 +87,34 @@
     		       "\")))")
     	       cmds))))))
 
-(defun flykey-double-backslashes (cmdpairs)
-  "Double all of the backslashes in the bindings in CMDPAIRS."
+(defun flykey-escape-bindings (cmdpairs)
+  "Escape backslashes and quotes in CMDPAIRS."
   (let (newpairs)
     (dolist (pair cmdpairs newpairs)
-      (if (car (cdr pair))
+      (if (cdr pair)
 	  (setq
 	   newpairs
 	   (cons
 	    (cons
 	     (car pair)
-	     (replace-regexp-in-string "[\\.]" "\\\\" (car (cdr pair)) nil t))
+	     (replace-regexp-in-string
+	      "[\".]" "\\\""
+	      (replace-regexp-in-string
+	       "[\\.]" "\\\\"
+	       (cdr pair) nil t)
+	      nil t))
 	    newpairs))))))
 
 (defun flykey-create-cmd-pairs (bufstr)
-  "Create a list cons cells of keys and keybindings from string BUFSTR."
-  (let ((lines (cdr (split-string bufstr "\n"))))
+  "Create a list of cons cells of keys and keybindings from string BUFSTR."
+  (let ((lines (cdr (split-string bufstr "\n" t)))) ;The t omits empty lines.
     (let (cmdpairs)
       (dolist (line lines cmdpairs)
-	(setq cmdpairs (cons (split-string line "=") cmdpairs))))))
+	(let ((keys (car (split-string line "=")))
+	      (binding (mapconcat 'identity
+				  (cdr (split-string line "="))
+				  "="))) ;Deal with = in keybinding.
+	  (setq cmdpairs (cons (cons keys binding) cmdpairs)))))))
 
 (defun flykey-make-map-cmds (flybuf)
   "Make the list of keymap commands from a buffer FLYBUF in the .flyk format."
