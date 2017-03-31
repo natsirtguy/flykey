@@ -115,8 +115,8 @@
 (ert-deftest flykey-backslashes-test ()
   (should
    (equal (flykey-escape-bindings '(("c" . "\\b")
-				       ("d" . "\\b")
-				       ("e" . "\\b")))
+				    ("d" . "\\b")
+				    ("e" . "\\b")))
 	  '(("e" . "\\\\b") ("d" . "\\\\b") ("c" . "\\\\b")))))
 
 ;; Check that we are correctly escaping quotes.
@@ -142,6 +142,16 @@
     (fundamental-mode)
     (set-frame-size (selected-frame) 80 48)
     (flykey))))
+
+;; Check that we can input commands also.
+(ert-deftest flykey-bind-to-command-test ()
+  (with-flykey-running
+   (set-buffer flykey-flybuf)
+   (insert "a>erase-buffer")
+   (set-buffer flykey-insertbuf)
+   (insert "what is this")
+   (funcall (local-key-binding "a")) 	; Simulate keystroke.
+   (should (equal (buffer-string) ""))))
 
 (provide 'flykey-test)
 ;;; flykey-test.el ends here
