@@ -35,6 +35,4 @@ Put `flykey.el` somewhere in your `load-path`.
 * Add customization options, such as whether to hide the buffers after
 text is inserted, create a flyk file for each major mode or each file,
 etc.
-* Escape quotes in keybindings.
-* Deal with "=" in keybindings correctly.
 * Add error handling.
