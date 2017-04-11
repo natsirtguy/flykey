@@ -37,3 +37,4 @@ text is inserted, create a flyk file for each major mode or each file,
 etc.
 * Add error handling.
 * Add functionality for binding keys to commands (maybe use > instead of =).
+* Add an Info file for FlyKey.
