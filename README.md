@@ -6,23 +6,18 @@ keybindings created on the fly.
 
 # Usage
 
-Start FlyKey with `M-x flykey` (I have this bound to `C-c k`). Two
-windows will be displayed below your current window: the "insertbuf"
-on top and the "flybuf" on the bottom. The first line in the flybuf
-should specify the type of file that is being edited. Subsequent lines
-are keybindings with the following syntax:
+Start FlyKey: `M-x flykey`
+Two windows will be displayed below your current window. The bottom
+buffer displays editable bindings for the middle buffer in the form
 
 `keys=binding`
 
-These keybindings will then work in the insertbuf in addition to the
-keybindings which are inherited from the buffer you were editing when
-you invoked FlyKey. At this point, you can write something in the
-insertbuf using the modified keybindings, then insert it into the
-original buffer at the point using `C-c i`. `C-c w` will open a
-minibuffer which will allow you to insert text without the keybindings
-you have specified. `C-c c` clears the insertbuf. You can also save
-your flybuf modifications for future use when editing documents with
-the same major mode. Editing the flybuf will update the keybindings.
+Insert text from middle buffer: `C-c i`
+Type word in middle buffer without bindings: `C-c w`
+Clear middle buffer: `C-c c`
+
+You can save the middle buffer for future use when editing documents
+with the same major mode.
 
 # Installation
 Put `flykey.el` somewhere in your `load-path`.
