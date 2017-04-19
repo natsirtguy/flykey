@@ -7,18 +7,19 @@ keybindings created on the fly.
 # Usage
 
 Start FlyKey: `M-x flykey`
+
 Two windows will be displayed below your current window. The bottom
 buffer displays editable bindings for the middle buffer in the form
 
-`keys=binding
-keys>command`
+`keys=binding`  
+`keys>command`
 
 The first line is an example of a normal keybinding: typing "keys"
 will insert "binding" instead. The second line is an example of a
 command binding: typing "keys" will execute an Elisp command.
 
-Insert text from middle buffer: `C-c i`
-Type word in middle buffer without bindings: `C-c w`
+Insert text from middle buffer: `C-c i`  
+Type word in middle buffer without bindings: `C-c w`  
 Clear middle buffer: `C-c c`
 
 You can save the middle buffer for future use when editing documents

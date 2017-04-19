@@ -4,7 +4,7 @@
 
 ;; Author: Tristan McKinney <natsirtguy@gmail.com>
 ;; Maintainer: Tristan McKinney <natsirtguy@gmail.com>
-;; Version: 0.1.0
+;; Version: 0.2.0
 ;; Keywords: convenience
 ;; URL: https://github.com/natsirtguy/flykey
 ;; Package-Requires: ((f "0.19.0"))
@@ -29,8 +29,8 @@
 ;; Boston, MA 02110-1301, USA.
 
 ;;; Commentary:
-;; flykey.el is a tool to rapidly insert specialized text, like LaTeX
-;; equations, into a document by changing keymappings on the fly.
+;; flykey.el is a tool to rapidly insert text or create temporary
+;; command keybindings by changing keymappings on the fly.
 
 ;;; Code:
 
