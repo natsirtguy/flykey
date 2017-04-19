@@ -10,7 +10,12 @@ Start FlyKey: `M-x flykey`
 Two windows will be displayed below your current window. The bottom
 buffer displays editable bindings for the middle buffer in the form
 
-`keys=binding`
+`keys=binding
+keys>command`
+
+The first line is an example of a normal keybinding: typing "keys"
+will insert "binding" instead. The second line is an example of a
+command binding: typing "keys" will execute an Elisp command.
 
 Insert text from middle buffer: `C-c i`
 Type word in middle buffer without bindings: `C-c w`
@@ -31,5 +36,5 @@ Put `flykey.el` somewhere in your `load-path`.
 text is inserted, create a flyk file for each major mode or each file,
 etc.
 * Add error handling.
-* Add functionality for binding keys to commands (maybe use > instead of =).
 * Add an Info file for FlyKey.
+* Prevent FlyKey from stopping when a bad keybinding is used.

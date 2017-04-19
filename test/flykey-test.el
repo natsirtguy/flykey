@@ -79,7 +79,7 @@
 	       (with-current-buffer flybuf (buffer-string))))
 	  (should (string= flybufcontents "#lisp-mode\n t=that \n"))))))))
 
-;; Determine whether helper macro kill-leftover-buffers is working.
+;; Use helper macro kill-leftover-buffers.
 (ert-deftest kill-leftover-buffers-test ()
   (with-temp-buffer
     (let ((buflist (buffer-list)))
@@ -87,7 +87,7 @@
        (get-buffer-create "someotherbuffer"))
       (should (equal buflist (buffer-list))))))
 
-;; Check that flykey-reload-map works.
+;; Reload map with new command
 (ert-deftest flykey-buffer-list-test ()
   (with-flykey-running
    (select-window (get-buffer-window flykey-flybuf))
@@ -95,7 +95,7 @@
    (insert "a=\\ant\n")
    (flykey-reload-map)))
 
-;; Check that it is possible to kill the flykey buffers.
+;; Kill various flykey buffers.
 (ert-deftest flykey-kill-buffer-test ()
   (with-flykey-running
    (kill-buffer flykey-flybuf))
@@ -104,14 +104,21 @@
   (with-flykey-running
    (kill-buffer)))
 
-;; Check that we correctly generate the pairs of commands.
-(ert-deftest flykey-create-cmd-pairs-test ()
+;; Generate the pairs of normal binding commands.
+(ert-deftest flykey-create-normal-cmd-pairs-test ()
   (let ((bufstr "blah \nt=this\nw=who\ne=a=b"))
     (should (equal
-	     (flykey-create-cmd-pairs bufstr)
+	     (flykey-create-normal-cmd-pairs bufstr)
 	     '(("e" . "a=b") ("w" . "who") ("t" . "this"))))))
 
-;; Check that we are correctly doubling backslashes.
+;; Generate pairs of command binding commands.
+(ert-deftest flykey-create-command-cmd-pairs-test ()
+  (let ((bufstr "blah \nt>this\nw>who\ne>a-b"))
+    (should (equal
+	     (flykey-create-command-cmd-pairs bufstr)
+	     '(("e" . "a-b") ("w" . "who") ("t" . "this"))))))
+
+;; Double backslashes.
 (ert-deftest flykey-backslashes-test ()
   (should
    (equal (flykey-escape-bindings '(("c" . "\\b")
@@ -119,14 +126,49 @@
 				    ("e" . "\\b")))
 	  '(("e" . "\\\\b") ("d" . "\\\\b") ("c" . "\\\\b")))))
 
-;; Check that we are correctly escaping quotes.
+;; Escape quotes.
 (ert-deftest flykey-quote-test ()
   (should
    (equal (flykey-escape-bindings '(("c" . "\"b")))
 	  '(("c" . "\\\"b")))))
 
-;; Check that list of commands is correctly created.
-(ert-deftest flykey-create-quoted-cmds-test ()
+;; Create list of normal binding commands, differently.
+(ert-deftest flykey-create-normal-binding-cmds-test ()
+  (with-temp-buffer
+    (insert "blah \nt=this\na=\\ant\n\n\n")
+    (should
+     (equal
+      (flykey-create-normal-binding-cmds
+       (flykey-escape-bindings
+	(flykey-create-normal-cmd-pairs (buffer-string))))
+      '("(local-set-key (kbd \"a\" ) (lambda () (interactive) (insert \"\\\\ant\")))"
+	"(local-set-key (kbd \"t\" ) (lambda () (interactive) (insert \"this\")))")))))
+
+;; Create list of Elisp command binding commands.
+(ert-deftest flykey-create-command-binding-cmds-test ()
+  (with-temp-buffer
+    (insert "blah \nt>erase-buffer\nc>comment-region")
+    (should
+     (equal
+      (flykey-create-command-binding-cmds
+       (flykey-escape-bindings
+	(flykey-create-command-cmd-pairs (buffer-string))))
+      '("(local-set-key (kbd \"c\" ) (lambda () (interactive) (comment-region)))"
+	"(local-set-key (kbd \"t\" ) (lambda () (interactive) (erase-buffer)))")))))
+
+;; Use flykey-create-normal-binding-cmds on a command binding.
+(ert-deftest flykey-use-normal-on-command-test ()
+  (with-temp-buffer
+    (insert "blah \nt>erase-buffer\nc>comment-region")
+    (should
+     (equal
+      (flykey-create-normal-binding-cmds
+       (flykey-escape-bindings
+	(flykey-create-normal-cmd-pairs (buffer-string))))
+      nil))))
+
+;; Create list of normal binding commands.
+(ert-deftest flykey-create-quoted-cmds-normal-test ()
   (with-temp-buffer
     (insert "blah \nt=this\na=\\ant\n\n\n")
     (should
@@ -135,7 +177,27 @@
       '("(local-set-key (kbd \"a\" ) (lambda () (interactive) (insert \"\\\\ant\")))"
 	"(local-set-key (kbd \"t\" ) (lambda () (interactive) (insert \"this\")))")))))
 
-;; Check that flykey works with a file in fundamental mode (no keymap).
+;; Create list of command binding commands.
+(ert-deftest flykey-create-quoted-cmds-commands-test ()
+  (with-temp-buffer
+    (insert "blah \nt>erase-buffer\na>comment-region\n\n\n")
+    (should
+     (equal
+      (flykey-create-quoted-cmds (current-buffer))
+      '("(local-set-key (kbd \"t\" ) (lambda () (interactive) (erase-buffer)))"
+	"(local-set-key (kbd \"a\" ) (lambda () (interactive) (comment-region)))")))))
+
+;; Create list of mixed binding commands.
+(ert-deftest flykey-create-quoted-cmds-mixed-test ()
+  (with-temp-buffer
+    (insert "blah \nt>erase-buffer\na=\\ant\n\n\n")
+    (should
+     (equal
+      (flykey-create-quoted-cmds (current-buffer))
+      '("(local-set-key (kbd \"a\" ) (lambda () (interactive) (insert \"\\\\ant\")))"
+	"(local-set-key (kbd \"t\" ) (lambda () (interactive) (erase-buffer)))")))))
+
+;; Use FlyKey with a file in fundamental mode (no keymap).
 (ert-deftest flykey-fundamental-mode-test ()
   (with-sandbox
    (kill-leftover-buffers
@@ -143,11 +205,11 @@
     (set-frame-size (selected-frame) 80 48)
     (flykey))))
 
-;; Check that we can input commands also.
+;; Bind Elisp commands.
 (ert-deftest flykey-bind-to-command-test ()
   (with-flykey-running
    (set-buffer flykey-flybuf)
-   (insert "a>erase-buffer")
+   (insert "a>erase-buffer\n")
    (set-buffer flykey-insertbuf)
    (insert "what is this")
    (funcall (local-key-binding "a")) 	; Simulate keystroke.

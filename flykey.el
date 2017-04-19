@@ -70,13 +70,22 @@
   (interactive)
   (insert (read-from-minibuffer "Input: ")))
 
-(defun flykey-create-quoted-cmds (flybuf)
-  "Create the list of commands to make the keymap using FLYBUF."
-  (let ((cmdpairs
-	 (flykey-escape-bindings
-	  (flykey-create-cmd-pairs
-	   (with-current-buffer flybuf (buffer-string))))))
-    (let (cmds)
+(defun flykey-create-command-binding-cmds (cmdpairs)
+  "Create list of keybinding commands to bind Elisp commands from CMDPAIRS."
+  (let (cmds)
+      (dolist (cmdpair cmdpairs cmds)
+	(setq
+    	 cmds
+    	 (cons (concat "(local-set-key (kbd \""
+    		       (car cmdpair)
+    		       "\" ) (lambda () (interactive) ("
+    		       (cdr cmdpair)
+    		       ")))")
+    	       cmds)))))
+
+(defun flykey-create-normal-binding-cmds (cmdpairs)
+  "Create list of normal keybinding commands from CMDPAIRS."
+  (let (cmds)
       (dolist (cmdpair cmdpairs cmds)
 	(setq
     	 cmds
@@ -85,7 +94,17 @@
     		       "\" ) (lambda () (interactive) (insert \""
     		       (cdr cmdpair)
     		       "\")))")
-    	       cmds))))))
+    	       cmds)))))
+
+(defun flykey-create-quoted-cmds (flybuf)
+  "Create the list of commands to make the keymap using FLYBUF."
+  (append (flykey-create-normal-binding-cmds
+	   (flykey-escape-bindings
+	    (flykey-create-normal-cmd-pairs
+	     (with-current-buffer flybuf (buffer-string)))))
+	  (flykey-create-command-binding-cmds
+	   (flykey-create-command-cmd-pairs
+	     (with-current-buffer flybuf (buffer-string))))))
 
 (defun flykey-escape-bindings (cmdpairs)
   "Escape backslashes and quotes in CMDPAIRS."
@@ -105,16 +124,37 @@
 	      nil t))
 	    newpairs))))))
 
-(defun flykey-create-cmd-pairs (bufstr)
+(defun flykey-create-normal-cmd-pairs (bufstr)
   "Create a list of cons cells of keys and keybindings from string BUFSTR."
   (let ((lines (cdr (split-string bufstr "\n" t)))) ;The t omits empty lines.
     (let (cmdpairs)
       (dolist (line lines cmdpairs)
-	(let ((keys (car (split-string line "=")))
+	(if (flykey-normal-line-p line)
+	    (let ((keys (car (split-string line "=")))
 	      (binding (mapconcat 'identity
 				  (cdr (split-string line "="))
 				  "="))) ;Deal with = in keybinding.
-	  (setq cmdpairs (cons (cons keys binding) cmdpairs)))))))
+	      (setq cmdpairs (cons (cons keys binding) cmdpairs)))
+	  cmdpairs)))))
+
+(defun flykey-create-command-cmd-pairs (bufstr)
+  "Like flykey-create-normal-cmd-pairs, but for Elisp commands, from BUFSTR."
+  (let ((lines (cdr (split-string bufstr "\n" t)))) ;The t omits empty lines.
+    (let (cmdpairs)
+      (dolist (line lines cmdpairs)
+	(if (not (flykey-normal-line-p line))
+	    (let ((keys (car (split-string line ">")))
+		  (binding (cadr (split-string line ">"))))
+	      (setq cmdpairs (cons (cons keys binding) cmdpairs)))
+	  cmdpairs)))))
+
+(defun flykey-normal-line-p (line)
+  "Determine whether LINE in flybuf is a normal or command binding."
+  (if (string-match "=" line)
+      (if (string-match ">" line)
+	  (> (string-match ">" line) (string-match "=" line))
+	t)
+    nil))
 
 (defun flykey-make-map-cmds (flybuf)
   "Make the list of keymap commands from a buffer FLYBUF in the .flyk format."
