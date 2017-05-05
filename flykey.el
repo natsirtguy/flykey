@@ -212,11 +212,13 @@
       (local-set-key (kbd "C-c c") 'flykey-clear-insertbuf)
       (local-set-key (kbd "H-c") 'flykey-clear-insertbuf)
       (local-set-key (kbd "C-c w") 'flykey-input-no-map)
+      (local-set-key (kbd "C-c q") 'flykey-quit)
       (local-set-key (kbd "H-w") 'flykey-input-no-map))
     (with-current-buffer flykey-flybuf
       (local-set-key (kbd "C-c i") 'flykey-insert-and-close)
       (local-set-key (kbd "H-i") 'flykey-insert-and-close)
       (local-set-key (kbd "C-c c") 'flykey-clear-insertbuf)
+      (local-set-key (kbd "C-c q") 'flykey-quit)
       (local-set-key (kbd "H-c") 'flykey-clear-insertbuf))))
 
 (defun flykey-set-local-vars (buf oldbuf flybuf insertbuf)
@@ -291,7 +293,20 @@ of a hook which runs when the buffer list changes, we must remove it from the
 	      (remove-hook 'buffer-list-update-hook 'flykey-reload-map t))
 	    (with-current-buffer flykey-insertbuf
 	      (add-hook 'buffer-list-update-hook 'flykey-reload-map nil t))))
-     (error "One of the necessary buffers is not correctly bound")))
+    (error "One of the necessary buffers is not correctly bound")))
+
+(defun flykey-quit ()
+  "Quit flykey, closing flybuf and insertbuf."
+  (interactive)
+  (if (and (boundp 'flykey-insertbuf)
+	   (boundp 'flykey-flybuf))
+      (if (and (buffer-live-p flykey-insertbuf)
+	       (buffer-live-p flykey-flybuf))
+	  (progn
+	    (delete-window (get-buffer-window flykey-flybuf))
+	    (delete-window (get-buffer-window flykey-insertbuf))
+	    (kill-buffer flykey-flybuf)
+	    (kill-buffer flykey-insertbuf)))))
 
 (provide 'flykey)
 ;;; flykey.el ends here
