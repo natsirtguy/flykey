@@ -20,7 +20,8 @@ command binding: typing "keys" will execute an Elisp command.
 
 Insert text from middle buffer: `C-c i`  
 Type word in middle buffer without bindings: `C-c w`  
-Clear middle buffer: `C-c c`
+Clear middle buffer: `C-c c`  
+Quit FlyKey: `C-c q`
 
 You can save the middle buffer for future use when editing documents
 with the same major mode.
